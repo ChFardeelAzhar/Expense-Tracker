@@ -63,16 +63,24 @@ fun NavigationSection(viewModel: MainScreenViewModel = hiltViewModel()) {
 
         composable(
             route = NavRouts.Destination.AddScreen.route,
+            arguments = listOf(
+                navArgument("id"){
+                    type = NavType.StringType
+//                    defaultValue = "-1"
+                }
+            )
         ){
 
             val data = it.arguments?.getString("{id}", "-1")
 
             Log.d("mySelectedId", "ID : ${data.toString()}")
+
             val dataModel = if (data != "-1"){
                 viewModel.getItemById(data!!.toLong())
             }else{
                 null
             }
+
             AddScreen(
                 navController = navController,
                 dataModel = dataModel

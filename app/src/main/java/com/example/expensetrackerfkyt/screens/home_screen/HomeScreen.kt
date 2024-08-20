@@ -2,6 +2,7 @@ package com.example.expensetrackerfkyt.screens.home_screen
 
 import android.annotation.SuppressLint
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -510,8 +511,10 @@ fun HistorySection(
                         showDialog.value = true
                     },
                     onUpdate = {
-                        val route =
-                            NavRouts.Destination.AddScreen.route +"{/${it}}"
+
+                        Log.d("currentId", "MyCurrentItemId: ${it.toString()}")
+                        val route = NavRouts.Destination.AddScreen.route.replace("{id}",it.toString())
+//                        val route = NavRouts.Destination.AddScreen.route + "/${it}"
                         navController.navigate(route)
                     }
                 )

@@ -12,4 +12,5 @@ class MainScreenViewModel @Inject constructor( private val dao: ExpenseDao) : Vi
     fun getItemById(id : Long) : ExpenseModelEntity {
         return dao.getItemById(id)
     }
+
 }

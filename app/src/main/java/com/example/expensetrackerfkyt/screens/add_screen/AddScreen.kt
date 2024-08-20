@@ -2,7 +2,6 @@
 
 package com.example.expensetrackerfkyt.screens.add_screen
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -114,7 +113,7 @@ fun AddScreen(
                         end.linkTo(parent.end)
                     },
                 navController = navController,
-                dataModelEntity = dataModel
+                dataModel = dataModel
 
             )
 
@@ -195,7 +194,7 @@ fun TopBarAddScreen(
 fun AddExpenseDataForm(
     modifier: Modifier,
     viewModel: AddScreenViewModel = hiltViewModel(),
-    dataModelEntity: ExpenseModelEntity?,
+    dataModel: ExpenseModelEntity?,
     navController: NavController,
 ) {
 
@@ -203,18 +202,23 @@ fun AddExpenseDataForm(
         mutableStateOf(false)
     }
 
+    var showDialog = remember {
+        mutableStateOf(false)
+    }
+
+
     var title by remember {
-        mutableStateOf(dataModelEntity?.title ?: "")
+        mutableStateOf(dataModel?.title ?: "")
     }
 
     var amount by remember {
-        mutableStateOf(dataModelEntity?.amount ?: "")
+        mutableStateOf(dataModel?.amount ?: "")
     }
 
     val typeOfData = listOf<String>("Income", "Expense")
     var selectedType = remember {
         mutableStateOf(
-            if (dataModelEntity?.type == "Income") {
+            if (dataModel?.type == "Income") {
                 typeOfData[0]
             } else {
                 typeOfData[1]
@@ -224,13 +228,11 @@ fun AddExpenseDataForm(
 
     var date = remember {
         mutableStateOf(
-            dataModelEntity?.date ?: System.currentTimeMillis()
+            dataModel?.date ?: System.currentTimeMillis()
         )
     }
 
-    var showDialog = remember {
-        mutableStateOf(false)
-    }
+
 
     val scope = rememberCoroutineScope()
 
@@ -380,9 +382,9 @@ fun AddExpenseDataForm(
                         viewModel.updateItem(
                             ExpenseModelEntity(
                                 id = id,
-                                type = dataModelEntity?.type ?: selectedType.value,
-                                title = dataModelEntity?.title!!,
-                                amount = dataModelEntity?.amount!!,
+                                type = dataModel?.type ?: selectedType.value,
+                                title = dataModel?.title!!,
+                                amount = dataModel?.amount!!,
                                 date = date.value
                             )
                         )
@@ -392,7 +394,7 @@ fun AddExpenseDataForm(
 
                 scope.launch {
                     viewModel.storeData(
-                        id = dataModelEntity?.id,
+                        id = dataModel?.id,
                         title = title,
                         amount = amount.toString().toDouble(),
                         date = date.value,
