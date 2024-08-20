@@ -24,6 +24,7 @@ class AddScreenViewModel @Inject constructor(private val dao: ExpenseDao) : View
         amount: Double,
         date: Long
     ) {
+        state.postValue(0)
 
         CoroutineScope(Dispatchers.IO).launch {
             val data = ExpenseModelEntity(
@@ -48,6 +49,10 @@ class AddScreenViewModel @Inject constructor(private val dao: ExpenseDao) : View
         }
 
 
+    }
+
+    suspend fun getItemById(id : Long) : ExpenseModelEntity {
+        return dao.getItemById(id)
     }
 
     /*

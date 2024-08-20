@@ -19,7 +19,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.expensetrackerfkyt.screens.add_screen.AddScreen
 import com.example.expensetrackerfkyt.screens.home_screen.MainScreen
-import com.example.expensetrackerfkyt.screens.home_screen.HomeScreenViewModel
 import com.example.expensetrackerfkyt.ui.theme.ExpenseTrackerFKYTTheme
 import com.example.expensetrackerfkyt.utils.NavRouts
 import com.example.expensetrackerfkyt.viewmodel.MainScreenViewModel
@@ -71,19 +70,14 @@ fun NavigationSection(viewModel: MainScreenViewModel = hiltViewModel()) {
             )
         ){
 
-            val data = it.arguments?.getString("{id}", "-1")
+            val data = it.arguments?.getString("id", "-1")
 
             Log.d("mySelectedId", "ID : ${data.toString()}")
 
-            val dataModel = if (data != "-1"){
-                viewModel.getItemById(data!!.toLong())
-            }else{
-                null
-            }
 
             AddScreen(
                 navController = navController,
-                dataModel = dataModel
+                dataModelId = data
             )
         }
 

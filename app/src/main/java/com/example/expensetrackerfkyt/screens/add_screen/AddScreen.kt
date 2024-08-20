@@ -2,6 +2,7 @@
 
 package com.example.expensetrackerfkyt.screens.add_screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -39,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -65,15 +67,63 @@ import com.example.expensetrackerfkyt.R
 import com.example.expensetrackerfkyt.data.model.ExpenseModelEntity
 import com.example.expensetrackerfkyt.ui.theme.DarkSeeGreen
 import com.example.expensetrackerfkyt.utils.DateUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 @Composable
 fun AddScreen(
     addScreenViewModel: AddScreenViewModel = hiltViewModel(),
     navController: NavController,
-    dataModel: ExpenseModelEntity?
-    ) {
+    dataModelId: String?
+) {
+
+
+    /*
+
+val defaultModelEntity = remember {
+    mutableStateOf<ExpenseModelEntity?>(null)
+}
+
+dataModelId?.let {id->
+    LaunchedEffect(key1 = id){
+        withContext(Dispatchers.IO) {
+            dataModelId?.toLong()?.let { id ->
+                val result = addScreenViewModel.getItemById(id)
+                defaultModelEntity.value = result
+            }
+        }
+    }
+}
+     */
+
+
+    val defaultModelEntity = remember {
+        mutableStateOf<ExpenseModelEntity?>(null)
+    }
+
+
+    LaunchedEffect(key1 = dataModelId) {
+
+        if (!dataModelId.isNullOrEmpty()) {
+            try {
+                val id = dataModelId.toLong()
+                withContext(Dispatchers.IO) {
+                    val result = addScreenViewModel.getItemById(id)
+                    defaultModelEntity.value = result
+                }
+            } catch (e: NumberFormatException) {
+
+                Log.d("Frdl_Error", "Error: ${e.printStackTrace().toString()}")
+                // Handle the exception if dataModelId is not a valid number
+                // This might indicate an error in how dataModelId is passed
+                e.printStackTrace()
+
+            }
+        }
+    }
+
 
     val state = addScreenViewModel.state.observeAsState()
     val context = LocalContext.current
@@ -113,7 +163,7 @@ fun AddScreen(
                         end.linkTo(parent.end)
                     },
                 navController = navController,
-                dataModel = dataModel
+                dataModel = defaultModelEntity.value
 
             )
 
@@ -122,8 +172,8 @@ fun AddScreen(
 
         when (state.value) {
             0 -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                Box(modifier = Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
             }
 
@@ -132,25 +182,35 @@ fun AddScreen(
             }
 
             2 -> {
-                Toast.makeText(context, "Item added successfully...", Toast.LENGTH_SHORT).show()
+                LaunchedEffect(key1 = true) {
+                    Toast.makeText(context, "Data Saved", Toast.LENGTH_SHORT).show()
+                    navController.popBackStack()
+                }
             }
 
             3 -> {
-                Toast.makeText(context, "Item did not added successfully...!!", Toast.LENGTH_SHORT)
-                    .show()
-
+                LaunchedEffect(key1 = true) {
+                    Toast.makeText(context, "Data Saving failed", Toast.LENGTH_SHORT).show()
+                }
             }
 
+            4 -> {
+                LaunchedEffect(key1 = true) {
+                    Toast.makeText(context, "Updated successfully...", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
 
     }
+
+
 }
 
 @Composable
 fun TopBarAddScreen(
     modifier: Modifier,
-    ) {
+) {
 
     Box(
         modifier = modifier
@@ -198,6 +258,11 @@ fun AddExpenseDataForm(
     navController: NavController,
 ) {
 
+    Log.d(
+        "defaultValue",
+        "Current Data Model : Id : ${dataModel?.id} Type: ${dataModel?.type} Amount: ${dataModel?.amount} Title: ${dataModel?.title}"
+    )
+
     var expended = remember {
         mutableStateOf(false)
     }
@@ -231,7 +296,6 @@ fun AddExpenseDataForm(
             dataModel?.date ?: System.currentTimeMillis()
         )
     }
-
 
 
     val scope = rememberCoroutineScope()
@@ -363,34 +427,6 @@ fun AddExpenseDataForm(
 
         Button(
             onClick = {
-
-                /*
-                if (id==null){
-                    scope.launch {
-                        viewModel.insertItem(
-                            ExpenseModelEntity(
-                                id = null,
-                                type = selectedType.value,
-                                title = title,
-                                amount = amount.toString().toDouble(),
-                                date = date.value
-                            )
-                        )
-                    }
-                }else{
-                    scope.launch {
-                        viewModel.updateItem(
-                            ExpenseModelEntity(
-                                id = id,
-                                type = dataModel?.type ?: selectedType.value,
-                                title = dataModel?.title!!,
-                                amount = dataModel?.amount!!,
-                                date = date.value
-                            )
-                        )
-                    }
-
-                 */
 
                 scope.launch {
                     viewModel.storeData(

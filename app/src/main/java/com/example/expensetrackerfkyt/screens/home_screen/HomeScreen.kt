@@ -38,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -190,19 +191,21 @@ fun MainScreen(
                 }
 
                 2 -> {
-
-                    Toast.makeText(context, "Item deleted successfully...", Toast.LENGTH_SHORT)
-                        .show()
+                    LaunchedEffect(key1 = true) {
+                        Toast.makeText(context, "Item deleted successfully...", Toast.LENGTH_SHORT)
+                            .show()
+                    }
                 }
 
                 3 -> {
+                    LaunchedEffect(key1 = true) {
+                        Toast.makeText(
+                            context,
+                            "Item did not delete successfully...!!",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
-                    Toast.makeText(
-                        context,
-                        "Item did not delete successfully...!!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
+                    }
                 }
 
             }
@@ -489,7 +492,6 @@ fun HistorySection(
         }
 
         if (items.isEmpty()) {
-
             item {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Image(
@@ -513,8 +515,9 @@ fun HistorySection(
                     onUpdate = {
 
                         Log.d("currentId", "MyCurrentItemId: ${it.toString()}")
-                        val route = NavRouts.Destination.AddScreen.route.replace("{id}",it.toString())
-//                        val route = NavRouts.Destination.AddScreen.route + "/${it}"
+
+                        val route =
+                            NavRouts.Destination.AddScreen.route.replace("{id}", it.toString())
                         navController.navigate(route)
                     }
                 )

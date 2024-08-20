@@ -9,8 +9,6 @@ import javax.inject.Inject
 @HiltViewModel
 class MainScreenViewModel @Inject constructor( private val dao: ExpenseDao) : ViewModel() {
 
-    fun getItemById(id : Long) : ExpenseModelEntity {
-        return dao.getItemById(id)
-    }
+
 
 }
