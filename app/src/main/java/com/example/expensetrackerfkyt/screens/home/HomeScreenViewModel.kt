@@ -1,4 +1,4 @@
-package com.example.expensetrackerfkyt.screens.home_screen
+package com.example.expensetrackerfkyt.screens.home
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -15,10 +15,10 @@ class HomeScreenViewModel @Inject constructor(private val expenseDao: ExpenseDao
 
 
     val state = MutableLiveData(1)
-
     val expenses = expenseDao.getAllExpenseData()
 
     fun totalBalance(list: List<ExpenseModelEntity>): String {
+
 
         var totalAmount = 0.0
 
@@ -37,7 +37,6 @@ class HomeScreenViewModel @Inject constructor(private val expenseDao: ExpenseDao
 
     }
 
-
     fun totalIncome(list: List<ExpenseModelEntity>): String {
 
         var totalIncome = 0.0
@@ -49,7 +48,6 @@ class HomeScreenViewModel @Inject constructor(private val expenseDao: ExpenseDao
 
         return formatCurrency(totalIncome)
     }
-
     fun totalExpense(list: List<ExpenseModelEntity>): String {
 
         var totalExpense = 0.0
@@ -68,7 +66,7 @@ class HomeScreenViewModel @Inject constructor(private val expenseDao: ExpenseDao
             expenseDao.deleteExpense(item)
             state.postValue(2)
         } catch (e: Exception) {
-            Log.d("delete", "Exception:  $e")
+            Log.d("delete", "Exception:  ${e.printStackTrace().toString()}")
             state.postValue(3)
         }
 

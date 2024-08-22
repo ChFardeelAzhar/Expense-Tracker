@@ -55,32 +55,6 @@ class AddScreenViewModel @Inject constructor(private val dao: ExpenseDao) : View
         return dao.getItemById(id)
     }
 
-    /*
-
-    suspend fun insertItem(item: ExpenseModelEntity) {
-
-        state.postValue(0) // loading
-        try {
-            dao.addExpense(item)
-            state.postValue(2) // success
-        } catch (e: Exception) {
-            state.postValue(3) // error
-        }
-
-    }
-
-    suspend fun updateItem(item: ExpenseModelEntity) {
-        state.postValue(0) // loading
-
-        try {
-            dao.updateExpense(item)
-            state.postValue(2) // success case
-        } catch (e: Exception) {
-            Log.d("onUpdateError", "Exception: $e")
-            state.postValue(3) // error case
-        }
-    }
-     */
 
 
 }

@@ -1,4 +1,4 @@
-package com.example.expensetrackerfkyt.screens.home_screen
+package com.example.expensetrackerfkyt.screens.home
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -31,7 +31,9 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -61,13 +63,19 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.expensetrackerfkyt.R
 import com.example.expensetrackerfkyt.data.model.ExpenseModelEntity
+import com.example.expensetrackerfkyt.screens.BottomBarItemData
+import com.example.expensetrackerfkyt.screens.BottomNavigationBar
 import com.example.expensetrackerfkyt.ui.theme.DarkSeeGreen
+import com.example.expensetrackerfkyt.ui.theme.Green
 import com.example.expensetrackerfkyt.utils.DateUtils
 import com.example.expensetrackerfkyt.utils.NavRouts
 import com.example.expensetrackerfkyt.utils.formatCurrency
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalTime
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -82,6 +90,11 @@ fun MainScreen(
     val state = viewModel.state.observeAsState()
     val context = LocalContext.current
 
+    val expenseState = viewModel.expenses.collectAsState(initial = emptyList())
+    val totalBalance = viewModel.totalBalance(expenseState.value)
+    val income = viewModel.totalIncome(expenseState.value)
+    val expense = viewModel.totalExpense(expenseState.value)
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -90,8 +103,9 @@ fun MainScreen(
                         launchSingleTop = true
                     }
                 },
+                shape = CircleShape,
                 containerColor = DarkSeeGreen,
-                modifier = Modifier.padding(16.dp)
+                elevation = FloatingActionButtonDefaults.elevation(8.dp),
             ) {
                 Image(
                     imageVector = Icons.Default.Add,
@@ -100,11 +114,51 @@ fun MainScreen(
                 )
             }
         },
-        modifier = Modifier.fillMaxSize()
-    ) {
+        floatingActionButtonPosition = FabPosition.Center,
+        bottomBar = {
+            val backStackEntry = navController.currentBackStackEntryAsState()
+            val isHomeSelected = NavRouts.Destination.HomeScreen.route == backStackEntry.value?.destination?.route
+            val isStatsSelected = NavRouts.Destination.StatsScreen.route == backStackEntry.value?.destination?.route
+
+            val itemsList = listOf<BottomBarItemData>(
+                BottomBarItemData(
+                    route = NavRouts.Destination.HomeScreen.route,
+                    image = if (isHomeSelected) R.drawable.ic_filled_home else R.drawable.ic_outlined_home
+                ),
+                BottomBarItemData(
+                    route = NavRouts.Destination.StatsScreen.route,
+                    image = if (isStatsSelected) R.drawable.ic_filled_barchart else R.drawable.ic_outlined_barchart
+                )
+            )
+
+
+            BottomNavigationBar(
+                navController = navController,
+                items = itemsList,
+                onItemClick = { item ->
+                    navController.navigate(item.route)
+                })
+
+
+//            BottomExpenseBar(
+//                items = itemsList,
+//                onImageClick = {
+//                    navController.navigate(it.route) {
+//                        launchSingleTop = true
+//                    }
+//                }
+//            )
+
+
+        },
+        modifier = Modifier.fillMaxSize(),
+
+        ) {
 
         Surface(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
         ) {
 
             ConstraintLayout(
@@ -141,10 +195,6 @@ fun MainScreen(
                 )
 
 
-                val state = viewModel.expenses.collectAsState(initial = emptyList())
-                val totalBalance = viewModel.totalBalance(state.value)
-                val income = viewModel.totalIncome(state.value)
-                val expense = viewModel.totalExpense(state.value)
 
                 CardItem(
                     modifier = Modifier.constrainAs(card) {
@@ -158,8 +208,9 @@ fun MainScreen(
                 )
 
                 HistorySection(
-                    items = state.value,
+                    items = expenseState.value,
                     modifier = Modifier
+                        .padding(it)
                         .padding(
                             bottom = 200.dp
                         )
@@ -171,13 +222,16 @@ fun MainScreen(
                         },
                     onDelete = {
                         scope.launch {
+                            withContext(Dispatchers.IO){
                             viewModel.deleteItem(it)
+                            }
                         }
                     },
                     navController = navController
                 )
 
             }
+
 
             when (state.value) {
                 0 -> {
@@ -458,7 +512,7 @@ fun HistorySection(
 
     LazyColumn(
         modifier = modifier
-            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 80.dp)
             .fillMaxSize()
     ) {
 
@@ -506,7 +560,7 @@ fun HistorySection(
 
             items(items) { item ->
                 SingleHistoryItem(
-                    color = if (item.type == "Expense") Color.Red else Color.Green,
+                    color = if (item.type == "Expense") Color.Red else Green,
                     item = item,
                     onLongPress = {
                         itemToDelete = it
@@ -564,13 +618,14 @@ fun SingleHistoryItem(
                 onUpdate.invoke(item.id!!)
             }
             .padding(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
 
         Column(
             horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.weight(6f)
         ) {
 
             Text(text = item.title, fontSize = 16.sp)
@@ -589,9 +644,11 @@ fun SingleHistoryItem(
                     item.amount
                 )
             }",
+            textAlign = TextAlign.End,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = color
+            color = color,
+            modifier = Modifier.weight(4f)
         )
 
     }

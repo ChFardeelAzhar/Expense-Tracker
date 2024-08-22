@@ -80,25 +80,6 @@ fun AddScreen(
 ) {
 
 
-    /*
-
-val defaultModelEntity = remember {
-    mutableStateOf<ExpenseModelEntity?>(null)
-}
-
-dataModelId?.let {id->
-    LaunchedEffect(key1 = id){
-        withContext(Dispatchers.IO) {
-            dataModelId?.toLong()?.let { id ->
-                val result = addScreenViewModel.getItemById(id)
-                defaultModelEntity.value = result
-            }
-        }
-    }
-}
-     */
-
-
     val defaultModelEntity = remember {
         mutableStateOf<ExpenseModelEntity?>(null)
     }
@@ -163,42 +144,11 @@ dataModelId?.let {id->
                         end.linkTo(parent.end)
                     },
                 navController = navController,
+                viewModel = addScreenViewModel,
                 dataModel = defaultModelEntity.value
-
             )
 
 
-        }
-
-        when (state.value) {
-            0 -> {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-            }
-
-            1 -> {
-
-            }
-
-            2 -> {
-                LaunchedEffect(key1 = true) {
-                    Toast.makeText(context, "Data Saved", Toast.LENGTH_SHORT).show()
-                    navController.popBackStack()
-                }
-            }
-
-            3 -> {
-                LaunchedEffect(key1 = true) {
-                    Toast.makeText(context, "Data Saving failed", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            4 -> {
-                LaunchedEffect(key1 = true) {
-                    Toast.makeText(context, "Updated successfully...", Toast.LENGTH_SHORT).show()
-                }
-            }
         }
 
 
@@ -253,7 +203,7 @@ fun TopBarAddScreen(
 @Composable
 fun AddExpenseDataForm(
     modifier: Modifier,
-    viewModel: AddScreenViewModel = hiltViewModel(),
+    viewModel: AddScreenViewModel,
     dataModel: ExpenseModelEntity?,
     navController: NavController,
 ) {
@@ -277,10 +227,10 @@ fun AddExpenseDataForm(
     }
 
     var amount by remember {
-        mutableStateOf(dataModel?.amount ?: "")
+        mutableStateOf(dataModel?.amount?.toString() ?: "")
     }
 
-    val typeOfData = listOf<String>("Income", "Expense")
+    val typeOfData = listOf("Income", "Expense")
     var selectedType = remember {
         mutableStateOf(
             if (dataModel?.type == "Income") {
@@ -297,6 +247,25 @@ fun AddExpenseDataForm(
         )
     }
 
+    val context = LocalContext.current
+
+
+    LaunchedEffect(key1 = dataModel) {
+
+        Log.d(
+            "currentDataModelValue",
+            "Current Data Model : Id : ${dataModel?.id} Type: ${dataModel?.type} Amount: ${dataModel?.amount} Title: ${dataModel?.title}"
+        )
+
+        title = dataModel?.title ?: ""
+        amount = dataModel?.amount?.toString() ?: ""
+        selectedType.value = if (dataModel?.type == "Income") {
+            typeOfData[0]
+        } else {
+            typeOfData[1]
+        }
+        date.value = dataModel?.date ?: System.currentTimeMillis()
+    }
 
     val scope = rememberCoroutineScope()
 
@@ -427,17 +396,21 @@ fun AddExpenseDataForm(
 
         Button(
             onClick = {
-
-                scope.launch {
-                    viewModel.storeData(
-                        id = dataModel?.id,
-                        title = title,
-                        amount = amount.toString().toDouble(),
-                        date = date.value,
-                        typeOfData = selectedType.value
-                    )
+                if (!title.isNullOrEmpty() && amount.isNotEmpty()) {
+                    scope.launch {
+                        viewModel.storeData(
+                            id = dataModel?.id,
+                            title = title,
+                            amount = amount.toString().toDouble(),
+                            date = date.value,
+                            typeOfData = selectedType.value
+                        )
+                    }
+                    navController.popBackStack()
+                } else {
+                    Toast.makeText(context, "Please Enter the data first!", Toast.LENGTH_SHORT)
+                        .show()
                 }
-                navController.popBackStack()
             },
             shape = RoundedCornerShape(8.dp),
             border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground),
