@@ -380,7 +380,7 @@ fun AddExpenseDataForm(
         )
         Spacer(modifier = Modifier.size(4.dp))
         OutlinedTextField(
-            value = DateUtils.formatData(date.value),
+            value = DateUtils.formatDate(date.value),
             onValueChange = {},
             modifier = Modifier
                 .fillMaxWidth()

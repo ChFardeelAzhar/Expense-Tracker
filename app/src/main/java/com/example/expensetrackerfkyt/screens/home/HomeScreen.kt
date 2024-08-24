@@ -1,6 +1,7 @@
 package com.example.expensetrackerfkyt.screens.home
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -240,15 +241,17 @@ fun MainScreen(
         }
     }
 
-    when (state.value) {
+    HandleState(context = context, state = state.value)
+}
+
+
+@Composable
+fun HandleState(context: Context, state: Int) {
+    when (state) {
         0 -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = DarkSeeGreen, strokeCap = StrokeCap.Round)
             }
-        }
-
-        1 -> {
-
         }
 
         2 -> {
@@ -259,13 +262,12 @@ fun MainScreen(
 
         3 -> {
             LaunchedEffect(key1 = true) {
-                Toast.makeText(context, "Failed to delete item !", Toast.LENGTH_SHORT).show()
-
+                Toast.makeText(context, "Failed to delete item!", Toast.LENGTH_SHORT).show()
             }
         }
-
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -625,9 +627,9 @@ fun SingleHistoryItem(
             modifier = Modifier.weight(6f)
         ) {
 
-            Text(text = item.title, fontSize = 16.sp)
+            Text(text = item.title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
             Text(
-                text = DateUtils.formatData(item.date),
+                text = DateUtils.dateTimeFormatter(item.date),
                 fontSize = 12.sp,
                 textAlign = TextAlign.Start,
                 fontWeight = FontWeight.Thin
