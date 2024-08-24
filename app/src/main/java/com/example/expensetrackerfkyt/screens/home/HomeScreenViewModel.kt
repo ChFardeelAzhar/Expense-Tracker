@@ -1,21 +1,23 @@
 package com.example.expensetrackerfkyt.screens.home
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.expensetrackerfkyt.data.dao.ExpenseDao
 import com.example.expensetrackerfkyt.data.model.ExpenseModelEntity
 import com.example.expensetrackerfkyt.utils.formatCurrency
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(private val expenseDao: ExpenseDao) : ViewModel() {
 
-
-    val state = MutableLiveData(1)
-    val expenses = expenseDao.getAllExpenseData()
+    val expenses : LiveData<List<ExpenseModelEntity>> = expenseDao.getAllExpenseData()
+    val state = MutableStateFlow(1)
 
     fun totalBalance(list: List<ExpenseModelEntity>): String {
 
@@ -48,6 +50,7 @@ class HomeScreenViewModel @Inject constructor(private val expenseDao: ExpenseDao
 
         return formatCurrency(totalIncome)
     }
+
     fun totalExpense(list: List<ExpenseModelEntity>): String {
 
         var totalExpense = 0.0
@@ -61,13 +64,13 @@ class HomeScreenViewModel @Inject constructor(private val expenseDao: ExpenseDao
     }
 
     suspend fun deleteItem(item: ExpenseModelEntity) {
-        state.postValue(0)
+        state.value = 0
         try {
             expenseDao.deleteExpense(item)
-            state.postValue(2)
+            state.value = 2
         } catch (e: Exception) {
+            state.value = 3
             Log.d("delete", "Exception:  ${e.printStackTrace().toString()}")
-            state.postValue(3)
         }
 
     }

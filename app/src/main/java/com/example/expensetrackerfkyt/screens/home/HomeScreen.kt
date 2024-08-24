@@ -53,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -87,13 +88,12 @@ fun MainScreen(
 ) {
 
     val scope = rememberCoroutineScope()
-    val state = viewModel.state.observeAsState()
-    val context = LocalContext.current
-
-    val expenseState = viewModel.expenses.collectAsState(initial = emptyList())
+    val expenseState = viewModel.expenses.observeAsState(initial = emptyList())
     val totalBalance = viewModel.totalBalance(expenseState.value)
     val income = viewModel.totalIncome(expenseState.value)
     val expense = viewModel.totalExpense(expenseState.value)
+    val state = viewModel.state.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         floatingActionButton = {
@@ -117,8 +117,10 @@ fun MainScreen(
         floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
             val backStackEntry = navController.currentBackStackEntryAsState()
-            val isHomeSelected = NavRouts.Destination.HomeScreen.route == backStackEntry.value?.destination?.route
-            val isStatsSelected = NavRouts.Destination.StatsScreen.route == backStackEntry.value?.destination?.route
+            val isHomeSelected =
+                NavRouts.Destination.HomeScreen.route == backStackEntry.value?.destination?.route
+            val isStatsSelected =
+                NavRouts.Destination.StatsScreen.route == backStackEntry.value?.destination?.route
 
             val itemsList = listOf<BottomBarItemData>(
                 BottomBarItemData(
@@ -136,7 +138,10 @@ fun MainScreen(
                 navController = navController,
                 items = itemsList,
                 onItemClick = { item ->
-                    navController.navigate(item.route)
+                    navController.navigate(item.route) {
+                        popUpTo(item.route)
+                        launchSingleTop = true
+                    }
                 })
 
 
@@ -144,6 +149,7 @@ fun MainScreen(
 //                items = itemsList,
 //                onImageClick = {
 //                    navController.navigate(it.route) {
+//                         popUpTo(item.route)
 //                        launchSingleTop = true
 //                    }
 //                }
@@ -222,52 +228,43 @@ fun MainScreen(
                         },
                     onDelete = {
                         scope.launch {
-                            withContext(Dispatchers.IO){
-                            viewModel.deleteItem(it)
+                            withContext(Dispatchers.IO) {
+                                viewModel.deleteItem(it)
                             }
                         }
                     },
                     navController = navController
                 )
-
             }
-
-
-            when (state.value) {
-                0 -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-
-                1 -> {
-
-                }
-
-                2 -> {
-                    LaunchedEffect(key1 = true) {
-                        Toast.makeText(context, "Item deleted successfully...", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                }
-
-                3 -> {
-                    LaunchedEffect(key1 = true) {
-                        Toast.makeText(
-                            context,
-                            "Item did not delete successfully...!!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                    }
-                }
-
-            }
-
 
         }
     }
 
+    when (state.value) {
+        0 -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = DarkSeeGreen, strokeCap = StrokeCap.Round)
+            }
+        }
+
+        1 -> {
+
+        }
+
+        2 -> {
+            LaunchedEffect(key1 = true) {
+                Toast.makeText(context, "Item deleted successfully...", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        3 -> {
+            LaunchedEffect(key1 = true) {
+                Toast.makeText(context, "Failed to delete item !", Toast.LENGTH_SHORT).show()
+
+            }
+        }
+
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -498,12 +495,12 @@ fun HistorySection(
                     itemToDelete?.let { onDelete(it) }
                     showDialog.value = false
                 }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.onBackground)
+                    Text("yes", color = MaterialTheme.colorScheme.onBackground)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog.value = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onBackground)
+                    Text("No", color = MaterialTheme.colorScheme.onBackground)
                 }
             }
         )

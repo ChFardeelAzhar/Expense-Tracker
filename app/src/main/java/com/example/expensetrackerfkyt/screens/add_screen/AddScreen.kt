@@ -42,6 +42,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -83,16 +85,19 @@ fun AddScreen(
     val defaultModelEntity = remember {
         mutableStateOf<ExpenseModelEntity?>(null)
     }
+    val context = LocalContext.current
 
 
     LaunchedEffect(key1 = dataModelId) {
 
         if (!dataModelId.isNullOrEmpty()) {
             try {
-                val id = dataModelId.toLong()
                 withContext(Dispatchers.IO) {
+
+                    val id = dataModelId.toLong()
                     val result = addScreenViewModel.getItemById(id)
                     defaultModelEntity.value = result
+
                 }
             } catch (e: NumberFormatException) {
 
@@ -106,8 +111,6 @@ fun AddScreen(
     }
 
 
-    val state = addScreenViewModel.state.observeAsState()
-    val context = LocalContext.current
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -129,11 +132,14 @@ fun AddScreen(
                 }
             )
 
-            TopBarAddScreen(modifier = Modifier.constrainAs(topBarSection) {
-                top.linkTo(parent.top)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-            })
+            TopBarAddScreen(
+                modifier = Modifier.constrainAs(topBarSection) {
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                },
+                navController = navController
+            )
 
             AddExpenseDataForm(
                 modifier = Modifier
@@ -160,6 +166,7 @@ fun AddScreen(
 @Composable
 fun TopBarAddScreen(
     modifier: Modifier,
+    navController: NavController
 ) {
 
     Box(
@@ -172,7 +179,9 @@ fun TopBarAddScreen(
         Image(
             imageVector = Icons.Filled.KeyboardArrowLeft,
             contentDescription = null,
-            modifier = Modifier.align(Alignment.CenterStart),
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .clickable { navController.popBackStack() },
             colorFilter = ColorFilter.tint(Color.White)
         )
 
@@ -248,6 +257,8 @@ fun AddExpenseDataForm(
     }
 
     val context = LocalContext.current
+    val state = viewModel.state.observeAsState()        // LiveData ( for showing Toasts on the behave of state value )
+    val newState = viewModel.newState.collectAsState()  // StateFlow ( for showing Toasts on the behave of state value )
 
 
     LaunchedEffect(key1 = dataModel) {
@@ -396,21 +407,34 @@ fun AddExpenseDataForm(
 
         Button(
             onClick = {
-                if (!title.isNullOrEmpty() && amount.isNotEmpty()) {
-                    scope.launch {
-                        viewModel.storeData(
-                            id = dataModel?.id,
-                            title = title,
-                            amount = amount.toString().toDouble(),
-                            date = date.value,
-                            typeOfData = selectedType.value
-                        )
+
+
+                if (!title.isNullOrEmpty() && !amount.isNullOrEmpty()) {
+                    try {
+                        val amountValue = amount.toDouble()
+                        scope.launch {
+                            viewModel.storeData(
+                                id = dataModel?.id,
+                                title = title,
+                                amount = amountValue,
+                                date = date.value,
+                                typeOfData = selectedType.value
+                            )
+                        }
+                        navController.popBackStack()
+                    } catch (e: NumberFormatException) {
+                        Toast.makeText(
+                            context,
+                            "Please enter the valid amount!",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                    navController.popBackStack()
                 } else {
                     Toast.makeText(context, "Please Enter the data first!", Toast.LENGTH_SHORT)
                         .show()
                 }
+
+
             },
             shape = RoundedCornerShape(8.dp),
             border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground),
@@ -426,6 +450,37 @@ fun AddExpenseDataForm(
         }
 
 
+    }
+
+
+    when (newState.value) {
+        0 -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = DarkSeeGreen, strokeCap = StrokeCap.Round)
+            }
+        }
+
+        1 -> {
+
+        }
+
+        2 -> {
+            LaunchedEffect(key1 = true) {
+                Toast.makeText(context, "Item added Successfully...", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        3 -> {
+            LaunchedEffect(key1 = true) {
+                Toast.makeText(context, "Failed! item not inserted!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        4 -> {
+            LaunchedEffect(key1 = true) {
+                Toast.makeText(context, "Item updated successfully...", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     if (showDialog.value) {
@@ -489,7 +544,7 @@ fun ExpenseDatePickerDialog(
         },
         dismissButton = {
             TextButton(onClick = { showDialog.value = false }) {
-                Text(text = "Cancle")
+                Text(text = "Cancel")
             }
         },
         modifier = Modifier.padding(16.dp)

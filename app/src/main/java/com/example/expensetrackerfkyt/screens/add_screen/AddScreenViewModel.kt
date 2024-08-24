@@ -8,6 +8,7 @@ import com.example.expensetrackerfkyt.data.model.ExpenseModelEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.Exception
@@ -15,8 +16,9 @@ import kotlin.Exception
 @HiltViewModel
 class AddScreenViewModel @Inject constructor(private val dao: ExpenseDao) : ViewModel() {
 
-    val state = MutableLiveData(1)  // default value
 
+    val state = MutableLiveData(1)
+    val newState = MutableStateFlow(1)
     fun storeData(
         id: Long? = null,
         typeOfData: String,
@@ -25,7 +27,7 @@ class AddScreenViewModel @Inject constructor(private val dao: ExpenseDao) : View
         date: Long
     ) {
         state.postValue(0)
-
+        newState.value = 0
         CoroutineScope(Dispatchers.IO).launch {
             val data = ExpenseModelEntity(
                 id = id,
@@ -38,23 +40,26 @@ class AddScreenViewModel @Inject constructor(private val dao: ExpenseDao) : View
             try {
                 if (id != null) {
                     dao.updateExpense(data)
+                    newState.value = 4
+                    state.postValue(4)// item updated successfully
                 } else {
                     dao.addExpense(data)
+                    newState.value = 2
+                    state.postValue(2) // item inserted successfully
                 }
-                state.postValue(2)
             } catch (e: Exception) {
-                state.postValue(3)
                 Log.d("TAG", "storeData: ${e.message}")
+                newState.value = 3
+                state.postValue(3) // something went wrong
             }
         }
 
 
     }
 
-    suspend fun getItemById(id : Long) : ExpenseModelEntity {
+    suspend fun getItemById(id: Long): ExpenseModelEntity {
         return dao.getItemById(id)
     }
-
 
 
 }

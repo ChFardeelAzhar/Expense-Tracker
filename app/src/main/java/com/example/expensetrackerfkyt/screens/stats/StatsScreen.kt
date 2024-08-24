@@ -93,7 +93,10 @@ fun StatsScreen(
                 navController = navController,
                 items = itemsList,
                 onItemClick = { item ->
-                    navController.navigate(item.route)
+                    navController.navigate(item.route) {
+                        popUpTo(item.route)
+                        launchSingleTop = true
+                    }
                 })
 
 
@@ -101,6 +104,7 @@ fun StatsScreen(
 //                items = itemsList,
 //                onImageClick = {
 //                    navController.navigate(it.route) {
+//                        popUpTo(item.route)
 //                        launchSingleTop = true
 //                    }
 //                }

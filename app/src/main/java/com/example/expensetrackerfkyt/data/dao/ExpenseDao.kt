@@ -1,5 +1,6 @@
 package com.example.expensetrackerfkyt.data.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -22,7 +23,7 @@ interface ExpenseDao {
     suspend fun updateExpense(item : ExpenseModelEntity)
 
     @Query("SELECT * FROM expense_table ORDER BY id DESC")
-    fun getAllExpenseData() : Flow<List<ExpenseModelEntity>>
+    fun getAllExpenseData() : LiveData<List<ExpenseModelEntity>>
 
     @Query("SELECT * FROM expense_table WHERE id = :id")
     fun getItemById(id : Long) : ExpenseModelEntity
