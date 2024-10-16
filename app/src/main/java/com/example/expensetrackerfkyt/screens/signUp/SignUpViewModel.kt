@@ -1,5 +1,6 @@
-package com.example.expensetrackerfkyt.screens.signIn
+package com.example.expensetrackerfkyt.screens.signUp
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -7,24 +8,28 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
-class SignInViewModel @Inject constructor(
+class SignUpViewModel @Inject constructor(
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
 
-    val stateFlow = MutableStateFlow(0)
-    fun signIn(
+    val stateFlow = MutableStateFlow(1)
+    fun signUp(
+        name: String,
         email: String,
         password: String,
+        confirmPassword: String,
     ) {
-        stateFlow.value = 1
+        stateFlow.value = 0
 
-        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
+        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
             if (it.isSuccessful) {
                 stateFlow.value = 2 // success
+                Log.d("Frdl_Test", "Account Created Successfully: ")
             }
         }.addOnFailureListener {
             stateFlow.value = 3 // error
+            Log.d("Frdl_Test", "Error: ${it.message.toString()}")
         }
 
     }

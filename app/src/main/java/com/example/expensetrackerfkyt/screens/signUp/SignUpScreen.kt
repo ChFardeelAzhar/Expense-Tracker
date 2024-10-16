@@ -1,6 +1,7 @@
 package com.example.expensetrackerfkyt.screens.signUp
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -20,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +33,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.expensetrackerfkyt.R
 import com.example.expensetrackerfkyt.ui.theme.DarkSeeGreen
@@ -47,7 +52,8 @@ import com.example.expensetrackerfkyt.utils.NavRouts
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SignUpScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: SignUpViewModel = hiltViewModel()
 ) {
 
 
@@ -55,8 +61,16 @@ fun SignUpScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    val focusRequester = remember { FocusRequester() }
+
+    var emailError by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf(false) }
+    var confirmPasswordError by remember { mutableStateOf(false) }
+
+    var showDialog by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
+
+    val state = viewModel.stateFlow.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -230,13 +244,14 @@ fun SignUpScreen(
 
                 Button(
                     onClick = {
+                        viewModel.signUp(name, email, password, confirmPassword)
 
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = DarkSeeGreen
                     )
                 ) {
-                    Text(text = "Login", color = MaterialTheme.colorScheme.onBackground)
+                    Text(text = "Sign Up", color = MaterialTheme.colorScheme.onBackground)
                 }
 
                 Spacer(modifier = Modifier.size(20.dp))
@@ -250,7 +265,41 @@ fun SignUpScreen(
                 }
             }
 
+            when (state.value) {
+                0 -> {
+                    showDialog = true
+                }
+
+                1 -> {
+
+                }
+
+                2 -> {
+                    Toast.makeText(context, "Account Created Successfully", Toast.LENGTH_SHORT)
+                        .show()
+                    navController.navigate(NavRouts.Destination.HomeScreen.route) {
+                        launchSingleTop = true
+                    }
+                }
+
+                3 -> {
+                    Toast.makeText(
+                        context,
+                        "Something went wrong please try again later!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    showDialog = false
+                }
+            }
+
+            if (showDialog) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = DarkSeeGreen)
+                }
+            }
+
         }
     }
+
 
 }
