@@ -60,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -284,6 +285,8 @@ fun GreetingSection(modifier: Modifier) {
 
     }
 
+    val time = System.currentTimeMillis()
+
     /*
     val currentHours = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
 
@@ -313,9 +316,12 @@ fun GreetingSection(modifier: Modifier) {
             )
         }
 
-        Image(
-            painter = painterResource(id = R.drawable.ic_notification),
-            contentDescription = null,
+        Text(
+            text = DateUtils.formatTime(time),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            textDecoration = TextDecoration.Underline
         )
 
     }
@@ -495,13 +501,15 @@ fun HistorySection(
             confirmButton = {
                 TextButton(onClick = {
                     itemToDelete?.let { onDelete(it) }
+                    itemToDelete = null
                     showDialog.value = false
                 }) {
                     Text("yes", color = MaterialTheme.colorScheme.onBackground)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog.value = false }) {
+                TextButton(onClick = { showDialog.value = false
+                    itemToDelete = null}) {
                     Text("No", color = MaterialTheme.colorScheme.onBackground)
                 }
             }
@@ -540,47 +548,24 @@ fun HistorySection(
                         }
                         .padding(3.dp)
                 )
-
             }
         }
-
-        if (items.isEmpty()) {
-            item {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Image(
-                        imageVector = Icons.Filled.Edit,
-                        contentDescription = null,
-                        modifier = Modifier.size(30.dp),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-                    )
-                }
-            }
-        } else {
-
-            items(items) { item ->
+            items(items, key = {it.id.toString()}) { item ->
                 SingleHistoryItem(
                     color = if (item.type == "Expense") Color.Red else Green,
                     item = item,
                     onLongPress = {
-                        itemToDelete = it
+                        itemToDelete = item
                         showDialog.value = true
                     },
                     onUpdate = {
-
-                        Log.d("currentId", "MyCurrentItemId: ${it.toString()}")
-
                         val route =
                             NavRouts.Destination.AddScreen.route.replace("{id}", it.toString())
                         navController.navigate(route)
                     }
                 )
             }
-        }
-
-
     }
-
-
 }
 
 @Composable
@@ -590,11 +575,9 @@ fun SingleHistoryItem(
     onLongPress: (ExpenseModelEntity) -> Unit,
     onUpdate: (id: Long) -> Unit
 ) {
-
     var swipeOffset by remember {
         mutableStateOf(0f)
     }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -620,7 +603,6 @@ fun SingleHistoryItem(
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-
         Column(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Center,

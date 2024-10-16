@@ -8,4 +8,5 @@ import com.example.expensetrackerfkyt.data.model.ExpenseModelEntity
 @Database(entities = [ExpenseModelEntity::class], version = 1, exportSchema = false)
 abstract class ExpenseDatabase : RoomDatabase() {
     abstract fun getDao() : ExpenseDao
+
 }

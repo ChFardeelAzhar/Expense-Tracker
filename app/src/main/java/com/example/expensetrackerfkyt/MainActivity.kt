@@ -40,6 +40,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.expensetrackerfkyt.screens.add_screen.AddScreen
 import com.example.expensetrackerfkyt.screens.home.MainScreen
+import com.example.expensetrackerfkyt.screens.signIn.SignInScreen
+import com.example.expensetrackerfkyt.screens.signUp.SignUpScreen
 import com.example.expensetrackerfkyt.screens.stats.StatsScreen
 import com.example.expensetrackerfkyt.ui.theme.DarkSeeGreen
 import com.example.expensetrackerfkyt.ui.theme.ExpenseTrackerFKYTTheme
@@ -78,7 +80,7 @@ fun NavigationSection() {
 
         NavHost(
             navController = navController,
-            startDestination = NavRouts.Destination.HomeScreen.route,
+            startDestination = NavRouts.Destination.SignIn.route,
             modifier = Modifier.padding(it)
         ) {
 
@@ -110,7 +112,17 @@ fun NavigationSection() {
 
             composable(NavRouts.Destination.StatsScreen.route) {
                 StatsScreen(
-                navController = navController
+                    navController = navController
+                )
+            }
+            composable(NavRouts.Destination.SignIn.route) {
+                SignInScreen(
+                    navController = navController
+                )
+            }
+            composable(NavRouts.Destination.SignUp.route) {
+                SignUpScreen(
+                    navController = navController
                 )
             }
 

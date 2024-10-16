@@ -16,7 +16,7 @@ object ProvideModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(context : Application) : ExpenseDatabase{
+    fun provideDatabase(context : Application) : ExpenseDatabase {
         return Room.databaseBuilder(
             context,
             ExpenseDatabase::class.java,
@@ -27,5 +27,6 @@ object ProvideModule {
     @Provides
     @Singleton
     fun provideDao(dbDao : ExpenseDatabase) : ExpenseDao = dbDao.getDao()
+
 
 }

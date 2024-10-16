@@ -10,9 +10,14 @@ object DateUtils {
         return formatter.format(date)
     }
 
-    fun dateTimeFormatter(date: Long) : String{
+    fun dateTimeFormatter(date: Long): String {
         val dateTimeFormatter = SimpleDateFormat("dd-MMM-yyyy,  HH:mm a", Locale.getDefault())
         return dateTimeFormatter.format(date)
+    }
+
+    fun formatTime(time: Long): String {
+        val timeFormatter = SimpleDateFormat("HH:mm a", Locale.getDefault())
+        return timeFormatter.format(time)
     }
 
 

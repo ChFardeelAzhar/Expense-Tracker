@@ -19,6 +19,8 @@ class AddScreenViewModel @Inject constructor(private val dao: ExpenseDao) : View
 
     val state = MutableLiveData(1)
     val newState = MutableStateFlow(1)
+
+
     fun storeData(
         id: Long? = null,
         typeOfData: String,
