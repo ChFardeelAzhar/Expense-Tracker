@@ -76,9 +76,6 @@ fun SignInScreen(
                 }
             )
 
-
-
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -163,6 +160,7 @@ fun SignInScreen(
                             email, password
                         )
                     },
+                    enabled = !email.isNullOrEmpty() && !password.isNullOrEmpty(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = DarkSeeGreen
                     )
@@ -210,6 +208,8 @@ fun SignInScreen(
                         "Something went wrong please try again later!",
                         Toast.LENGTH_SHORT
                     ).show()
+                    showDialog = false
+
                 }
             }
 

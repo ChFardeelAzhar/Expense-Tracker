@@ -12,12 +12,12 @@ class SignInViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-    val stateFlow = MutableStateFlow(0)
+    val stateFlow = MutableStateFlow(1)
     fun signIn(
         email: String,
         password: String,
     ) {
-        stateFlow.value = 1
+        stateFlow.value = 0
 
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
             if (it.isSuccessful) {

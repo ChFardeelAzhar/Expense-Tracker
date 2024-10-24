@@ -23,6 +23,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -38,16 +39,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.expensetrackerfkyt.auth.AuthViewModel
 import com.example.expensetrackerfkyt.screens.add_screen.AddScreen
 import com.example.expensetrackerfkyt.screens.home.MainScreen
 import com.example.expensetrackerfkyt.screens.signIn.SignInScreen
 import com.example.expensetrackerfkyt.screens.signUp.SignUpScreen
+import com.example.expensetrackerfkyt.screens.signUp.SignUpViewModel
 import com.example.expensetrackerfkyt.screens.stats.StatsScreen
 import com.example.expensetrackerfkyt.ui.theme.DarkSeeGreen
 import com.example.expensetrackerfkyt.ui.theme.ExpenseTrackerFKYTTheme
 import com.example.expensetrackerfkyt.utils.NavRouts
 import com.example.expensetrackerfkyt.viewmodel.MainScreenViewModel
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -71,16 +76,26 @@ class MainActivity : ComponentActivity() {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NavigationSection() {
+fun NavigationSection(
+    viewModel: AuthViewModel = hiltViewModel()
+) {
 
+    val isUserLogin = viewModel.isUserLogin.observeAsState()
     val navController = rememberNavController()
+
 
     Scaffold(
     ) {
 
+        val destination = if (isUserLogin.value == true) {
+            NavRouts.Destination.HomeScreen.route
+        } else {
+            NavRouts.Destination.SignIn.route
+        }
+
         NavHost(
             navController = navController,
-            startDestination = NavRouts.Destination.SignIn.route,
+            startDestination = destination,
             modifier = Modifier.padding(it)
         ) {
 

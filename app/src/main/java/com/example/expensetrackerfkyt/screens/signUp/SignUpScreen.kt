@@ -1,8 +1,10 @@
 package com.example.expensetrackerfkyt.screens.signUp
 
 import android.annotation.SuppressLint
+import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -48,6 +50,8 @@ import androidx.navigation.NavController
 import com.example.expensetrackerfkyt.R
 import com.example.expensetrackerfkyt.ui.theme.DarkSeeGreen
 import com.example.expensetrackerfkyt.utils.NavRouts
+import com.example.expensetrackerfkyt.utils.isValidEmail
+import com.example.expensetrackerfkyt.utils.isValidPassword
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -158,7 +162,9 @@ fun SignUpScreen(
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
@@ -176,6 +182,16 @@ fun SignUpScreen(
                         unfocusedContainerColor = Color.Transparent
                     )
                 )
+                if (emailError) {
+                    Text(
+                        text = "Invalid email format", color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .background(color = MaterialTheme.colorScheme.error),
+                        textAlign = TextAlign.Start
+                    )
+                }
                 Spacer(modifier = Modifier.size(10.dp))
 
                 Text(
@@ -189,7 +205,9 @@ fun SignUpScreen(
 
                 OutlinedTextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = {
+                        password = it
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
@@ -207,6 +225,17 @@ fun SignUpScreen(
                         unfocusedContainerColor = Color.Transparent
                     )
                 )
+                if (passwordError) {
+                    Text(
+                        text = "Password must contain at least 1 letter and 1 special character",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .background(color = MaterialTheme.colorScheme.error),
+                        textAlign = TextAlign.Start
+                    )
+                }
 
                 Spacer(modifier = Modifier.size(10.dp))
 
@@ -221,7 +250,10 @@ fun SignUpScreen(
 
                 OutlinedTextField(
                     value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
+                    onValueChange = {
+                        confirmPassword = it
+
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
@@ -239,14 +271,39 @@ fun SignUpScreen(
                         unfocusedContainerColor = Color.Transparent
                     )
                 )
-
+                if (confirmPasswordError) {
+                    Text(
+                        text = "Passwords do not match",
+                        color = Color.White,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .background(color = MaterialTheme.colorScheme.error),
+                        textAlign = TextAlign.Start
+                    )
+                }
                 Spacer(modifier = Modifier.size(20.dp))
 
                 Button(
                     onClick = {
-                        viewModel.signUp(name, email, password, confirmPassword)
-
+                        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+                            Toast.makeText(context, "Please enter the correct email", Toast.LENGTH_SHORT).show()
+                        }
+                        else if (password.length < 6 && confirmPassword.length < 6) {
+                            Toast.makeText(
+                                context,
+                                "Password should contain at least 6 words",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        else if (password != confirmPassword){
+                            Toast.makeText(context, "Password not match", Toast.LENGTH_SHORT).show()
+                        }
+                        else {
+                            viewModel.signUp(name, email, password, confirmPassword)
+                        }
                     },
+                    enabled = !name.isNullOrEmpty() && !email.isNullOrEmpty() && !password.isNullOrEmpty() && !confirmPassword.isNullOrEmpty(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = DarkSeeGreen
                     )
@@ -262,6 +319,7 @@ fun SignUpScreen(
                     }
                 }, modifier = Modifier.padding(bottom = 20.dp)) {
                     Text(text = "Already a User -> Go to Sign In ")
+
                 }
             }
 

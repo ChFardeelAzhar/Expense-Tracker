@@ -68,6 +68,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.expensetrackerfkyt.R
+import com.example.expensetrackerfkyt.auth.AuthViewModel
 import com.example.expensetrackerfkyt.data.model.ExpenseModelEntity
 import com.example.expensetrackerfkyt.screens.BottomBarItemData
 import com.example.expensetrackerfkyt.screens.BottomNavigationBar
@@ -86,6 +87,7 @@ import java.time.LocalTime
 @Composable
 fun MainScreen(
     viewModel: HomeScreenViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel(),
     navController: NavController
 ) {
 
@@ -199,10 +201,10 @@ fun MainScreen(
                             top.linkTo(parent.top)
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
-                        }
+                        },
+                    viewModel = authViewModel
+
                 )
-
-
 
                 CardItem(
                     modifier = Modifier.constrainAs(card) {
@@ -272,9 +274,9 @@ fun HandleState(context: Context, state: Int) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun GreetingSection(modifier: Modifier) {
+fun GreetingSection(modifier: Modifier, viewModel : AuthViewModel) {
 
-    val currentTime = LocalTime.now()
+    val currentTime by remember { mutableStateOf(LocalTime.now()) }
 
     val currentGreeting = if (currentTime.isBefore(LocalTime.NOON)) {
         "Good Morning!"
@@ -285,7 +287,11 @@ fun GreetingSection(modifier: Modifier) {
 
     }
 
-    val time = System.currentTimeMillis()
+    val time by remember {
+        mutableStateOf(System.currentTimeMillis())
+    }
+
+    val userName  = viewModel.userName.observeAsState()
 
     /*
     val currentHours = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
@@ -309,7 +315,7 @@ fun GreetingSection(modifier: Modifier) {
         ) {
             Text(text = currentGreeting, fontSize = 16.sp, color = Color.White)
             Text(
-                text = "Fardeel Azhar",
+                text = userName?.value ?: "Guest",
                 fontSize = 22.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
@@ -339,7 +345,8 @@ fun CardItem(
     modifier: Modifier,
     income: String,
     expense: String,
-    totalBalance: String
+    totalBalance: String,
+    auth : AuthViewModel = hiltViewModel()
 
 ) {
 
@@ -387,6 +394,9 @@ fun CardItem(
                 Image(
                     painter = painterResource(id = R.drawable.ic_dots),
                     contentDescription = null,
+                    modifier = Modifier.clickable {
+                        auth.logout()
+                    }
                 )
             }
 
@@ -508,8 +518,10 @@ fun HistorySection(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog.value = false
-                    itemToDelete = null}) {
+                TextButton(onClick = {
+                    showDialog.value = false
+                    itemToDelete = null
+                }) {
                     Text("No", color = MaterialTheme.colorScheme.onBackground)
                 }
             }
@@ -550,21 +562,21 @@ fun HistorySection(
                 )
             }
         }
-            items(items, key = {it.id.toString()}) { item ->
-                SingleHistoryItem(
-                    color = if (item.type == "Expense") Color.Red else Green,
-                    item = item,
-                    onLongPress = {
-                        itemToDelete = item
-                        showDialog.value = true
-                    },
-                    onUpdate = {
-                        val route =
-                            NavRouts.Destination.AddScreen.route.replace("{id}", it.toString())
-                        navController.navigate(route)
-                    }
-                )
-            }
+        items(items, key = { it.id.toString() }) { item ->
+            SingleHistoryItem(
+                color = if (item.type == "Expense") Color.Red else Green,
+                item = item,
+                onLongPress = {
+                    itemToDelete = item
+                    showDialog.value = true
+                },
+                onUpdate = {
+                    val route =
+                        NavRouts.Destination.AddScreen.route.replace("{id}", it.toString())
+                    navController.navigate(route)
+                }
+            )
+        }
     }
 }
 
