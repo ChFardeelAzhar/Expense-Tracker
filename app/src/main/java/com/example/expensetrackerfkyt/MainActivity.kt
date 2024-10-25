@@ -41,6 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.expensetrackerfkyt.auth.AuthViewModel
 import com.example.expensetrackerfkyt.screens.add_screen.AddScreen
+import com.example.expensetrackerfkyt.screens.detail_screen.DetailScreen
 import com.example.expensetrackerfkyt.screens.home.MainScreen
 import com.example.expensetrackerfkyt.screens.signIn.SignInScreen
 import com.example.expensetrackerfkyt.screens.signUp.SignUpScreen
@@ -137,6 +138,11 @@ fun NavigationSection(
             }
             composable(NavRouts.Destination.SignUp.route) {
                 SignUpScreen(
+                    navController = navController
+                )
+            }
+            composable(NavRouts.Destination.DetailScreen.route) {
+                DetailScreen(
                     navController = navController
                 )
             }

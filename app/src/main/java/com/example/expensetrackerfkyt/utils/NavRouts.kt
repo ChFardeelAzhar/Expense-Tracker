@@ -8,6 +8,7 @@ object NavRouts {
         object StatsScreen : Destination("stats_screen")
         object SignIn : Destination("signIn_screen")
         object SignUp : Destination("signUp_screen")
+        object DetailScreen : Destination("detail_screen")
     }
 
 

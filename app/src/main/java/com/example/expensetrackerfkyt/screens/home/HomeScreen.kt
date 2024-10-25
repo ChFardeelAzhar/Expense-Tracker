@@ -78,6 +78,7 @@ import com.example.expensetrackerfkyt.utils.DateUtils
 import com.example.expensetrackerfkyt.utils.NavRouts
 import com.example.expensetrackerfkyt.utils.formatCurrency
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalTime
@@ -274,7 +275,7 @@ fun HandleState(context: Context, state: Int) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun GreetingSection(modifier: Modifier, viewModel : AuthViewModel) {
+fun GreetingSection(modifier: Modifier, viewModel: AuthViewModel) {
 
     val currentTime by remember { mutableStateOf(LocalTime.now()) }
 
@@ -287,11 +288,11 @@ fun GreetingSection(modifier: Modifier, viewModel : AuthViewModel) {
 
     }
 
-    val time by remember {
+    var time by remember {
         mutableStateOf(System.currentTimeMillis())
     }
 
-    val userName  = viewModel.userName.observeAsState()
+    val userName = viewModel.userName.observeAsState()
 
     /*
     val currentHours = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
@@ -304,6 +305,15 @@ fun GreetingSection(modifier: Modifier, viewModel : AuthViewModel) {
 
      */
 
+
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            time = System.currentTimeMillis()
+            delay(1000L)
+        }
+    }
+
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -315,7 +325,7 @@ fun GreetingSection(modifier: Modifier, viewModel : AuthViewModel) {
         ) {
             Text(text = currentGreeting, fontSize = 16.sp, color = Color.White)
             Text(
-                text = userName?.value ?: "Guest",
+                text = userName?.value ?: "Friend",
                 fontSize = 22.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
@@ -346,7 +356,7 @@ fun CardItem(
     income: String,
     expense: String,
     totalBalance: String,
-    auth : AuthViewModel = hiltViewModel()
+    auth: AuthViewModel = hiltViewModel()
 
 ) {
 
@@ -501,6 +511,7 @@ fun HistorySection(
     var showDialog = remember {
         mutableStateOf(false)
     }
+
     var itemToDelete by remember { mutableStateOf<ExpenseModelEntity?>(null) }
 
     if (showDialog.value && itemToDelete != null) {
@@ -556,7 +567,7 @@ fun HistorySection(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
                         .clickable {
-
+                            navController.navigate(NavRouts.Destination.DetailScreen.route)
                         }
                         .padding(3.dp)
                 )
@@ -564,6 +575,7 @@ fun HistorySection(
         }
         items(items, key = { it.id.toString() }) { item ->
             SingleHistoryItem(
+
                 color = if (item.type == "Expense") Color.Red else Green,
                 item = item,
                 onLongPress = {
@@ -576,7 +588,9 @@ fun HistorySection(
                     navController.navigate(route)
                 }
             )
+
         }
+
     }
 }
 
@@ -594,6 +608,7 @@ fun SingleHistoryItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.background.copy(alpha = .5f))
             .pointerInput(Unit) {
 //                detectTapGestures(
 //                    onLongPress = {
@@ -611,7 +626,8 @@ fun SingleHistoryItem(
             .clickable {
                 onUpdate.invoke(item.id!!)
             }
-            .padding(10.dp),
+            .padding(10.dp)
+        ,
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

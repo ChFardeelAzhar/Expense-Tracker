@@ -21,20 +21,14 @@ class HomeScreenViewModel @Inject constructor(private val expenseDao: ExpenseDao
 
     fun totalBalance(list: List<ExpenseModelEntity>): String {
 
-
         var totalAmount = 0.0
-
         list.forEach { item ->
-
             if (item.type == "Income") {
                 totalAmount += item.amount
             } else {
                 totalAmount -= item.amount
             }
-
         }
-
-
         return formatCurrency(totalAmount)
 
     }
